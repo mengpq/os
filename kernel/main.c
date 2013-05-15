@@ -253,6 +253,12 @@ void process_command(char* cmd){
  *======================================================================*/
 void TestA()
 {
+	int temp=0x500000;
+	u8 t;
+	for (t=0; t<255; t++){
+		write_mem(temp,t);
+		temp+=1024;
+	}
 	while (1) {
 		PROCESSA();
 	}
@@ -263,8 +269,14 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
+	int temp=0x500000,i;
+	for (i=0; i<255; i++){
+		int ret=read_mem(temp);
+		disp_int(ret); display_string(" ");
+		temp+=1024;
+	}
 	while(1){
-		PROCESSB();
+		//PROCESSB();
 	}
 }
 

@@ -22,18 +22,16 @@ LABEL_GDT:			Descriptor             0,                    0, 0						; 空描述�
 LABEL_DESC_FLAT_C:		Descriptor             0,              0fffffh, DA_CR  | DA_32 | DA_LIMIT_4K			; 0 ~ 4G
 LABEL_DESC_FLAT_RW:		Descriptor             0,              0fffffh, DA_DRW | DA_32 | DA_LIMIT_4K			; 0 ~ 4G
 LABEL_DESC_VIDEO:		Descriptor	 0B8000h,               0ffffh, DA_DRW                         | DA_DPL3	; 显存首地址
-LABEL_DESC_DATA: Descriptor 0500000h, 0fffffh , DA_DRW
 ; GDT ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 GdtLen		equ	$ - LABEL_GDT
 GdtPtr		dw	GdtLen - 1				; 段界限
-		dd	BaseOfLoaderPhyAddr + LABEL_GDT		; 基地址
+			dd	BaseOfLoaderPhyAddr + LABEL_GDT		; 基地址
 
 ; GDT 选择子 ----------------------------------------------------------------------------------
 SelectorFlatC		equ	LABEL_DESC_FLAT_C	- LABEL_GDT
 SelectorFlatRW		equ	LABEL_DESC_FLAT_RW	- LABEL_GDT
 SelectorVideo		equ	LABEL_DESC_VIDEO	- LABEL_GDT + SA_RPL3
-SelectorData        equ LABEL_DESC_DATA     - LABEL_GDT
 ; GDT 选择子 ----------------------------------------------------------------------------------
 
 

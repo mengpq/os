@@ -38,7 +38,9 @@ INT_S_CTLMASK	equ	0xA1	; setting bits in this port disables ints   <Slave>
 EOI		equ	0x20
 
 ; 以下选择子值必须与 protect.h 中保持一致!!!
+SELECTOR_FLAT_RW equ 0x10
 SELECTOR_FLAT_C		equ		0x08		; LOADER 里面已经确定了的.
 SELECTOR_TSS		equ		0x20		; TSS. 从外层跳到内存时 SS 和 ESP 的值从里面获得.
 SELECTOR_KERNEL_CS	equ		SELECTOR_FLAT_C
+SELECTOR_KERNEL_DS  equ     SELECTOR_FLAT_RW
 

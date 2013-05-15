@@ -9,6 +9,7 @@
 
 ; 导入全局变量
 extern	disp_pos
+extern  disp_int
 
 
 [SECTION .text]
@@ -22,7 +23,8 @@ global	enable_irq
 global	disable_irq
 global	enable_int
 global	disable_int
-
+global  write_mem
+global  read_mem
 
 
 ; ========================================================================
@@ -202,6 +204,47 @@ enable_8:
 	out	INT_S_CTLMASK, al	; clear bit at slave 8259
 	popf
 	ret
+
+
+; ========================================================================
+;		   write_mem 
+; ========================================================================
+write_mem:
+	push ebp
+	push ebx
+	mov ebp,esp
+	mov eax,[ebp + 12]
+	mov ebx,eax
+	mov al,[ebp + 16]
+	mov [ds:ebx],al
+
+	pop ebx
+	pop ebp
+	ret
+
+; ========================================================================
+;		   write_mem 
+; ========================================================================
+read_mem:
+	push edx
+	xor edx,edx
+	mov dl,[ds:eax]
+	mov eax,edx
+	pop edx
+	ret
+;	push eax
+;	push ebx
+;	mov ebx,[esp+4]
+;	xor eax,eax
+;	mov ax,[ds:ebx]
+;	cmp ax,100h
+;	jnz infite
+;	pop ebx
+;	pop eax
+;	mov eax,100h
+;	ret
+;infite:
+;	jmp $
 
 ; ========================================================================
 ;		   void disable_int();
