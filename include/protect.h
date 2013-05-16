@@ -150,5 +150,10 @@ typedef struct s_tss {
 /* 线性地址 → 物理地址 */
 #define vir2phys(seg_base, vir)	(u32)(((u32)seg_base) + (u32)(vir))
 
+/* 文件存储位置 */
+#define ROOTDIRECTORY 0xA00000 /* 文件目录项地址 10M */
+#define FILEENTRY 0xB00000     /* 文件存储初始地址 11M */
+#define BLOCKSIZE 0x1000     /* 每一个block的容量4K */
+#define MEMORYLIMIT 0x4000000  /* 最大内存，和bochsrc对应 64M*/
 
 #endif /* _ORANGES_PROTECT_H_ */

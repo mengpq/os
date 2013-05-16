@@ -27,7 +27,8 @@ ORANGESKERNEL	= kernel.bin
 OBJS		= kernel/kernel.o kernel/syscall.o kernel/start.o kernel/main.o\
 			kernel/clock.o kernel/keyboard.o kernel/tty.o\
 			kernel/i8259.o kernel/global.o kernel/protect.o kernel/proc.o\
-			lib/kliba.o lib/klib.o lib/string.o lib/a.o lib/b.o lib/c.o lib/d.o
+			lib/kliba.o lib/klib.o lib/string.o lib/a.o lib/b.o lib/c.o lib/d.o lib/memory.o kernel/editor.o\
+			lib/strfun.o
 DASMOUTPUT	= kernel.bin.asm
 
 # All Phony Targets
@@ -99,6 +100,11 @@ kernel/global.o: kernel/global.c include/type.h include/const.h include/protect.
 			include/global.h include/proto.h
 	$(CC) $(CFLAGS) -o $@ $<
 
+
+kernel/editor.o: kernel/editor.c include/type.h include/const.h include/protect.h include/proc.h \
+			include/global.h include/proto.h
+	$(CC) $(CFLAGS) -o $@ $<
+
 kernel/protect.o: kernel/protect.c include/type.h include/const.h include/protect.h include/proc.h include/proto.h \
 			include/global.h
 	$(CC) $(CFLAGS) -o $@ $<
@@ -108,6 +114,12 @@ kernel/proc.o: kernel/proc.c
 
 lib/klib.o: lib/klib.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h \
 			include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/memory.o: lib/memory.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/strfun.o: lib/strfun.c include/type.h include/const.h include/protect.h include/string.h include/proc.h include/proto.h include/global.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 lib/kliba.o : lib/kliba.asm

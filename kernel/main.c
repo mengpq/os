@@ -243,6 +243,8 @@ void process_command(char* cmd){
 		}
 	} else if (strcmp(CMD[0],"help")==0){
 		show_help();
+	} else if (strcmp(CMD[0],"editor")==0){
+		start_editor("acfast.txt");
 	} else{
 		display_string("No such command\n");
 	}
@@ -253,14 +255,16 @@ void process_command(char* cmd){
  *======================================================================*/
 void TestA()
 {
-	int temp=0x500000;
+	/*
+	int temp=FILEENTRY;
 	u8 t;
 	for (t=0; t<255; t++){
-		write_mem(temp,t);
-		temp+=1024;
+		write_memory(temp,t);
+		temp+=BLOCKSIZE;
 	}
+	*/
 	while (1) {
-		PROCESSA();
+		//PROCESSA();
 	}
 }
 
@@ -269,12 +273,18 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
+	int temp=new_out(10);
+	disp_int(temp); display_string(" ");
+	/*
 	int temp=0x500000,i;
-	for (i=0; i<255; i++){
-		int ret=read_mem(temp);
-		disp_int(ret); display_string(" ");
+	int delta=0x500000/1024;
+	for (i=0; i<delta; i++){
+		u8 ret=read_memory(temp);
+		//disp_int(ret); display_string(" ");
 		temp+=1024;
 	}
+	display_string("scan 5MB memory\n");
+	*/
 	while(1){
 		//PROCESSB();
 	}
