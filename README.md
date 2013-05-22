@@ -14,3 +14,22 @@ os homework base on orange's code
 * editor
 	* 实现vim简单的几个功能
 	* 只操作一个页面2000左右个字符
+	* normal mode key
+		* m 将光标移动到中间列
+		* d 删除当前行
+		* q 退出编辑
+		* i 进入插入模式
+		* ; 进入命令行模式
+	* insert mode key
+		* ESC 退出insert mode
+	* command line mode
+		* ESC 退出命令行模式
+		* enter 完成命令输入
+
+* 根目录
+	* 文件信息
+		* 16字节的文件名，4字节的后缀，12字节作者信息，4字节的大小，4字节模式，4字节的起始位置
+
+* algorithm
+	* split_by_space(char *CMD[], char *cmd, int *total);
+		* 将cmd存储的字符串按照空格隔开，CMD[]里面存储着各个分开的字符串的首字母，total是分开的字符串的个数，cmd的空格会被修改为\0

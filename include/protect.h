@@ -151,9 +151,12 @@ typedef struct s_tss {
 #define vir2phys(seg_base, vir)	(u32)(((u32)seg_base) + (u32)(vir))
 
 /* 文件存储位置 */
+#define MEMORYMAP 0x900000     /* 管理从10M开始的64M内存，每一个bit表示64bit内存是否被使用*/
+#define MEMORYMAPLIMIT 0XA00000 /* KEYMAP的内存限制*/
 #define ROOTDIRECTORY 0xA00000 /* 文件目录项地址 10M */
-#define FILEENTRY 0xB00000     /* 文件存储初始地址 11M */
-#define BLOCKSIZE 0x1000     /* 每一个block的容量4K */
+#define ROOTDIRECTORYLIMIT 0xB00000 /* 目录项上限 */
+#define FILESTOREADDR 0xB00000     /* 文件存储初始地址 11M */
+#define BLOCKSIZE 0x40     /* 每一个block的容量4K */
 #define MEMORYLIMIT 0x4000000  /* 最大内存，和bochsrc对应 64M*/
 
 #endif /* _ORANGES_PROTECT_H_ */

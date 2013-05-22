@@ -10,6 +10,10 @@ PUBLIC void	out_byte(u16 port, u8 value);
 PUBLIC u8	in_byte(u16 port);
 PUBLIC void	disp_str(char * info);
 PUBLIC void	disp_color_str(char * info, int color);
+PUBLIC u8 read_bit(int pos);
+PUBLIC int read_int(int pos);
+PUBLIC void write_bit(int pos, u8 c);
+PUBLIC void write_int(int pos, int value);
 
 /* protect.c */
 PUBLIC void	init_prot();
@@ -32,14 +36,21 @@ void TestC();
 void TestD();
 
 /* strfunc.c */
-PUBLIC int strlen(char* str);
+PUBLIC int strlen(const char* str);
+PUBLIC int strcmp(const char* a, const char *b);
+
+/* algorithm.c */
+PUBLIC void split_by_space(char *CMD[], char *cmd, int *total);
+
+/* file.c */
+PUBLIC int get_file_info_by_name(char *st, FILEINFO* file);
+PUBLIC void show_all_fileinfo();
+PUBLIC void write_data(int start,char* buffer, int size);
 
 /* editor.c */
 PUBLIC void start_editor(char *filename);
 
 /* memory.c */
-PUBLIC u8 read_memory(int pos);
-PUBLIC void write_memory(int pos, u8 c);
 PUBLIC int new_in(int total_block);
 PUBLIC int new_out(int total_block);
 

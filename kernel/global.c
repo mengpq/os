@@ -14,6 +14,7 @@
 #include "proc.h"
 #include "global.h"
 #include "keyboard.h"
+#include "file.h"
 
 
 PUBLIC	PROCESS			proc_table[NR_TASKS], proc_table_bak[NR_TASKS];

@@ -11,6 +11,7 @@
 #include "proto.h"
 #include "proc.h"
 #include "global.h"
+#include "file.h"
 
 
 /* 本文件内函数声明 */

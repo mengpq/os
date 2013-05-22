@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "global.h"
 #include "keyboard.h"
+#include "file.h"
 
 #define NORMAL 0
 #define INSERT 1
@@ -19,10 +20,12 @@ struct point{
 } editor_pos,temp_pos;
 
 u8 page_cache[4096];
+char editor_filename[32];
 int editor_mode,finish;
 
 void editor_display(u8 c){
 	char output[2]={0};
+	if (c==0) c=' ';
 	output[0]=c;
 	disp_pos=(editor_pos.x*80+editor_pos.y)*2;
 	if (c!='\n') page_cache[disp_pos]=c;
@@ -39,6 +42,44 @@ void editor_display_str(char *st){
 	while (st[i]){
 		editor_display(st[i]);
 		++i;
+	}
+}
+
+void editor_init(char *filename){
+	clear_screen();
+	editor_pos.x=23,editor_pos.y=0;
+	int i,len=strlen(filename);
+	for (i=0; i<80-len; i++) editor_display('-');
+	editor_display_str(filename);
+	editor_pos.x=23,editor_pos.y=0;
+	editor_display_str("normal mode");
+}
+
+void editor_save_file(char *st){
+	FILEINFO file;
+	memset(&file,0,sizeof(file));
+	if (get_file_info_by_name(st,&file)!=-1){
+		//display_string("file exist\n");
+	} else{
+		//display_string("Find the file\n");
+		memcpy(file.name,st,strlen(st));
+		file.size=sizeof(page_cache);
+		file.start_pos=new_space(FILESTOREADDR,file.size);
+		write_fileinfo(file);
+	}
+	write_data(file.start_pos,page_cache,sizeof(page_cache));
+}
+
+void editor_open_file(char *st){
+	FILEINFO file;
+	memset(&file,0,sizeof(file));
+	if (get_file_info_by_name(st,&file)!=-1){
+		memcpy(page_cache,(void *)file.start_pos,sizeof(page_cache));
+		editor_init(file.name);
+		memcpy(editor_filename,file.name,sizeof(file.name));
+		editor_pos.x=0,editor_pos.y=0;
+		int i,j;
+		for (i=0; i<23; i++) for (j=0; j<80; j++) editor_display(page_cache[(i*80+j)*2]);
 	}
 }
 
@@ -113,9 +154,10 @@ void delete_one_row(){
 void editor_process_command(){
 	editor_pos.x=24; editor_pos.y=0;
 	editor_display(':');
-	int len=0;
-	u8 scan_code,cmd[128];
+	int len=0,total=0;
+	u8 scan_code,cmd[64];
 	u8 *CMD[8];
+	memset(cmd,0,sizeof(cmd));
 	struct point temp;
 	while (TRUE){
 		scan_code=get_key_from_cache();
@@ -135,6 +177,15 @@ void editor_process_command(){
 			editor_clear_line(editor_pos.x);
 			break;
 		}
+	}
+	split_by_space(CMD,cmd,&total);
+	if (strcmp(CMD[0],"e")==0){
+		if (total==1) return;
+		editor_open_file(CMD[1]);
+	} else if (strcmp(CMD[0],"w")==0){
+		editor_save_file(editor_filename);
+	} else if (strcmp(CMD[0],"q")==0){
+		finish=1;
 	}
 }
 
@@ -183,6 +234,10 @@ void editor_process(u8 scan_code){
 				temp_pos=editor_pos;
 				editor_process_command();
 				editor_pos=temp_pos;
+			} else if (c=='w'){
+				editor_save_file(editor_filename);
+			} else if (c=='e'){
+				editor_open_file(editor_filename);
 			} else if (c=='q'){
 				finish=1;
 			}
@@ -205,15 +260,12 @@ void start_editor(char* filename){
 	
 	editor_mode=NORMAL;
 	finish=0;
-
-	editor_pos.x=23,editor_pos.y=0;
-	memset(page_cache,4096,0);
-	int cacheMemoryAddr=new_out(1);
-	int i,j,k,len=strlen(filename);
-	for (i=23,j=0; j<80-len; j++) editor_display('-');
-	for (k=0; j<80; j++,k++) editor_display(filename[k]);
-	editor_pos.x=23,editor_pos.y=0;
-	editor_display_str("normal mode");
+	memset(editor_filename,0,sizeof(editor_filename));
+	memcpy(editor_filename,filename,strlen(filename));
+	memset(page_cache,0,sizeof(page_cache));
+	editor_init(filename);
+	editor_open_file(filename);
+	int i,j,k;
 	editor_pos.x=0,editor_pos.y=0;
 	tracert_editorPos();
 	while (!finish){

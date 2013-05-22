@@ -23,8 +23,10 @@ global	enable_irq
 global	disable_irq
 global	enable_int
 global	disable_int
-global  write_mem
-global  read_mem
+global  read_bit
+global  read_int
+global  write_bit
+global 	write_int
 
 
 ; ========================================================================
@@ -207,9 +209,9 @@ enable_8:
 
 
 ; ========================================================================
-;		   write_mem 
+;		   write_bit 
 ; ========================================================================
-write_mem:
+write_bit:
 	push ebp
 	push ebx
 	mov ebp,esp
@@ -223,12 +225,37 @@ write_mem:
 	ret
 
 ; ========================================================================
-;		   write_mem 
+;		   write_int 
 ; ========================================================================
-read_mem:
+write_int:
+	push ebp
+	push ebx
+	mov ebp,esp
+	mov ebx,[ebp + 12]
+	mov eax,[ebp + 16]
+	mov [ds:ebx],eax
+	call disp_int
+	pop ebx
+	pop ebp
+	ret
+; ========================================================================
+;		   read_bit 
+; ========================================================================
+read_bit:
 	push edx
 	xor edx,edx
 	mov dl,[ds:eax]
+	mov eax,edx
+	pop edx
+	ret
+
+; ========================================================================
+;		   read_int 
+; ========================================================================
+read_int:
+	push edx
+	xor edx,edx
+	mov edx,[ds:eax]
 	mov eax,edx
 	pop edx
 	ret

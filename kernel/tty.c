@@ -13,6 +13,7 @@
 #include "proc.h"
 #include "global.h"
 #include "keyboard.h"
+#include "file.h"
 
 
 /*======================================================================*

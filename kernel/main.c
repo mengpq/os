@@ -12,6 +12,7 @@
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#include "file.h"
 
 
 /*======================================================================*
@@ -61,11 +62,11 @@ PUBLIC int kernel_main()
 		selector_ldt += 1 << 3;
 	}
 
-	proc_table[0].ticks = proc_table[0].priority =  10;  proc_table[0].status = RUNNING;
-	proc_table[1].ticks = proc_table[1].priority =   50;  proc_table[1].status = STOPPED;
-	proc_table[2].ticks = proc_table[2].priority =   5;  proc_table[2].status = STOPPED;
-	proc_table[3].ticks = proc_table[3].priority =   5;  proc_table[3].status = STOPPED;
-	proc_table[4].ticks = proc_table[4].priority =   5;  proc_table[4].status = STOPPED;
+	proc_table[0].ticks = proc_table[0].priority =   2;  proc_table[0].status = RUNNING;
+	proc_table[1].ticks = proc_table[1].priority =   2;  proc_table[1].status = STOPPED;
+	proc_table[2].ticks = proc_table[2].priority =   2;  proc_table[2].status = STOPPED;
+	proc_table[3].ticks = proc_table[3].priority =   2;  proc_table[3].status = STOPPED;
+	proc_table[4].ticks = proc_table[4].priority =   2;  proc_table[4].status = STOPPED;
 
 	//for (i=0; i<NR_TASKS; i++) proc_table_bak[i]=proc_table[i];
 
@@ -112,34 +113,6 @@ void clear_screen(){
 	for (i=0; i<4000; i++) display_string(" ");
 	disp_pos = 0;
 	in_process(0);
-}
-
-int strcmp(const char* a, const char* b){
-	int i = 0;
-	while (a[i] && b[i] && a[i]==b[i]) ++i;
-	if (!a[i] && b[i]) return -1;
-	if (a[i] && !b[i]) return 1;
-	if (!a[i] && !b[i]) return 0;
-	if (a[i]<b[i]) return -1;
-	if (a[i]>b[i]) return 1;
-}
-
-void split_by_space(char *CMD[], char *cmd, int *total){
-	int i=0,firstChar=1;
-	while (cmd[i]==' ') ++i;
-	if (cmd[i]==0) return;
-	while (cmd[i]!=0){
-		if (cmd[i]!=' '){
-			if (firstChar){
-				CMD[(*total)++]=cmd+i;
-				firstChar=0;
-			}
-		} else{
-			cmd[i]=0;
-			firstChar=1;
-		}
-		++i;
-	}
 }
 
 int run(char* process_name){
@@ -210,6 +183,12 @@ void show_help(){
 	display_string("    kill <name>      ---kill the process by name\n");
 	display_string("    show -a -r -d -s ---show all tasks's status\n");
 	display_string("    help             ---show help information\n");
+	display_string("    edit <name>      ---edit an file\n");
+}
+
+void show_file_entry(){
+	/* in file.c */
+	show_all_fileinfo();
 }
 
 void process_command(char* cmd){
@@ -241,10 +220,12 @@ void process_command(char* cmd){
 		if (show_tasks(CMD[1])==-1){
 			display_string("I can't recognize the parameter\n");
 		}
+	} else if (strcmp(CMD[0],"ls")==0){
+		show_file_entry();
 	} else if (strcmp(CMD[0],"help")==0){
 		show_help();
-	} else if (strcmp(CMD[0],"editor")==0){
-		start_editor("acfast.txt");
+	} else if (strcmp(CMD[0],"edit")==0){
+		start_editor(CMD[1]);
 	} else{
 		display_string("No such command\n");
 	}
@@ -261,6 +242,13 @@ void TestA()
 	for (t=0; t<255; t++){
 		write_memory(temp,t);
 		temp+=BLOCKSIZE;
+	}
+	*/
+	int i;
+	FILEINFO file;
+	/*
+	for (i=0; i<16384; i++){
+		write_fileinfo(file);
 	}
 	*/
 	while (1) {

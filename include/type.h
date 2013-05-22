@@ -20,5 +20,8 @@ typedef	void	(*irq_handler)	(int irq);
 
 typedef void*	system_call;
 
-
+typedef struct file{
+	char name[16],ext[4],author[12];
+	int size,mode,start_pos;
+}FILEINFO;
 #endif /* _ORANGES_TYPE_H_ */
