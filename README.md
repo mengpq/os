@@ -6,9 +6,10 @@ os homework base on orange's code
 	* include/proc.h - 存放全局函数名 <br>
 	* kernel/global.h - 存放全局变量
 * 文件存储位置
+	* #define MEMORYMAP              /* 1bit表示一个BLOCK是否被使用，BLOCK从10M开始算起*/
 	* #define ROOTDIRECTORY 0xA00000 /* 文件目录项地址 10M */
-	* #define FILEENTRY 0xB00000     /* 文件存储初始地址 11M */
-	* #define MEMORYBLOCK 0x1000     /* 每一个block的容量4K */
+	* #define FILESTOREADDR 0xB00000     /* 文件存储初始地址 11M */
+	* #define MEMORYBLOCK 0x40     /* 每一个block的容量64byte */
 	* #define MEMORYLIMIT 0x4000000  /* 最大内存，和bochsrc对应 64M*/
 
 * editor
@@ -19,12 +20,16 @@ os homework base on orange's code
 		* d 删除当前行
 		* q 退出编辑
 		* i 进入插入模式
+		* w 保存
 		* ; 进入命令行模式
 	* insert mode key
 		* ESC 退出insert mode
 	* command line mode
 		* ESC 退出命令行模式
 		* enter 完成命令输入
+		* e <filename> 打开文件
+		* w 保存
+		* q 退出
 
 * 根目录
 	* 文件信息

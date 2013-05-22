@@ -98,15 +98,6 @@ void display_int(int value){
 	in_process(0);
 }
 
-int atoi(char *str){
-	int ret=0,i=0;
-	while (str[i]!=0 && '0'<=str[i] && str[i]<='9'){
-		ret=ret*10+(str[i]-'0');
-		++i;
-	}
-	return ret;
-}
-
 void clear_screen(){
 	int i=0;
 	disp_pos = 0;

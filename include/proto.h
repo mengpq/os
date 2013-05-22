@@ -21,6 +21,7 @@ PUBLIC u32	seg2phys(u16 seg);
 
 /* klib.c */
 PUBLIC void	delay(int time);
+PUBLIC int atoi(char *st);
 
 /* kernel.asm */
 void restart();
@@ -41,6 +42,7 @@ PUBLIC int strcmp(const char* a, const char *b);
 
 /* algorithm.c */
 PUBLIC void split_by_space(char *CMD[], char *cmd, int *total);
+PUBLIC int isnumber(char *st);
 
 /* file.c */
 PUBLIC int get_file_info_by_name(char *st, FILEINFO* file);

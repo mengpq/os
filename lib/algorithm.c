@@ -8,6 +8,7 @@
 
 PUBLIC void split_by_space(char *CMD[], char *cmd, int *total){
 	int i=0,firstChar=1;
+	*total=0;
 	while (cmd[i]==' ') ++i;
 	if (cmd[i]==0) return;
 	while (cmd[i]!=0){
@@ -22,4 +23,13 @@ PUBLIC void split_by_space(char *CMD[], char *cmd, int *total){
 		}
 		++i;
 	}
+}
+
+PUBLIC int isnumber(char *st){
+	int i=0;
+	while (st[i]){
+		if (!('0'<=st[i] && st[i]<='9')) return 0;
+		++i;
+	}
+	return 1;
 }
