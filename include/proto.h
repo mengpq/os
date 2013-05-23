@@ -49,9 +49,10 @@ PUBLIC int is_alpha(char ch);
 PUBLIC void tolower(char *st, char *ed);
 
 /* file.c */
-PUBLIC int get_file_info_by_name(char *st, FILEINFO* file);
+PUBLIC int get_file_info_by_name(char *filename, FILEINFO* file);
 PUBLIC void show_all_fileinfo();
 PUBLIC void write_data(int start,char* buffer, int size);
+PUBLIC int remove(char *filename);
 
 /* editor.c */
 PUBLIC void start_editor(char *filename);

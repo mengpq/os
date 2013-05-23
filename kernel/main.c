@@ -285,9 +285,13 @@ void show_help(){
 	display_string("    dump <addr> <len> ---view the memory [addr+len)\n");
 }
 
-void show_file_entry(){
+void ls(){
 	/* in file.c */
 	show_all_fileinfo();
+}
+
+int rm(char *filename){
+	return remove(filename);
 }
 
 void process_command(char* cmd){
@@ -337,7 +341,16 @@ void process_command(char* cmd){
 			display_string("I can't recognize the parameter\n");
 		}
 	} else if (strcmp(CMD[0],"ls")==0){
-		show_file_entry();
+		ls();
+	} else if (strcmp(CMD[0],"rm")==0){
+		if (total<2){
+			display_string("Usage: rm <filename>\n");
+		} else{
+			if (rm(CMD[1])==-1){
+				display_string(CMD[1]); 
+				display_string(" no exist!\n");
+			}
+		}
 	} else if (strcmp(CMD[0],"help")==0){
 		show_help();
 	} else if (strcmp(CMD[0],"edit")==0){

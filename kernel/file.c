@@ -15,16 +15,27 @@ PUBLIC void write_fileinfo(FILEINFO info){
 	memcpy((void *)start,&info,sizeof(info));
 }
 
-int get_file_info_by_name(char *name, FILEINFO *file){
+int get_file_info_by_name(char *filename, FILEINFO *file){
 	int i,addr;
 	for (i=0,addr=MEMORYMAP; i<16384; i++,addr++){
 		u8 temp=read_mem_byte(addr);
 		if (temp){
 			memcpy(file,(void *)(i*BLOCKSIZE+ROOTDIRECTORY),sizeof(*file));
-			if (strcmp(file->name,name)==0) return 0;
+			if (strcmp(file->name,filename)==0) return i;
 		}
 	}
 	return -1;
+}
+
+PUBLIC int remove(char *filename){
+	FILEINFO file;
+	memset(&file,0,sizeof(file));
+	int index=get_file_info_by_name(filename,&file);
+	if (index==-1) return -1;
+	memset((void *)(file.start_pos),0,file.size);
+	memset((void *)(index*BLOCKSIZE+ROOTDIRECTORY),0,sizeof(file));
+	memset((void *)(MEMORYMAP+index),0,1);
+	return 0;
 }
 
 PUBLIC void read_fileinfo(FILEINFO info){
@@ -33,8 +44,7 @@ PUBLIC void read_fileinfo(FILEINFO info){
 	int temp=ROOTDIRECTORY;
 	memcpy(&file,(void*)ROOTDIRECTORY,40);
 	display_string(file.name);
-	display_string(" ");
-	display_string(file.ext);
+	display_string(" "); display_string(file.ext);
 	display_string(" ");
 	display_string(file.author);
 	display_string(" ");
