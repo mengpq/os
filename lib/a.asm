@@ -10,12 +10,14 @@ extern milli_delay
 global PROCESSA
 
 PROCESSA:
+	mov word[x],1
+	mov word[y],48
 	mov byte[rdlu], 1             ; 当前画框的方向, 1-向右,2-向下,3-向左,4-向上
     mov word[char],'A'
 	
 loop1:
     call boxing
-	mov eax,10
+	mov eax,2
 	push eax
 	call milli_delay
 	add esp,4

@@ -15,7 +15,7 @@ PROCESSC:
 	
 loop1:
     call boxing
-	mov eax,10
+	mov eax,2
 	push eax
 	call milli_delay
 	add esp,4

@@ -32,7 +32,7 @@ PUBLIC void schedule()
 
 		if (!greatest_ticks) {
 			for (p = proc_table; p < proc_table+NR_TASKS; p++) if (p->status == RUNNING){
-				p->ticks = p->priority;
+				p->ticks = p->pre_ticks;
 			}
 		}
 	}

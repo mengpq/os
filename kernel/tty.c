@@ -26,7 +26,7 @@ PUBLIC void task_tty()
 	}
 }
 
-PUBLIC void in_process(u32 key)
+PUBLIC void trace_cursor()
 {
 	disable_int();
 	out_byte(CRTC_ADDR_REG, CURSOR_H);

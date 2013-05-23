@@ -18,7 +18,7 @@ PUBLIC void write_fileinfo(FILEINFO info){
 int get_file_info_by_name(char *name, FILEINFO *file){
 	int i,addr;
 	for (i=0,addr=MEMORYMAP; i<16384; i++,addr++){
-		u8 temp=read_bit(addr);
+		u8 temp=read_mem_byte(addr);
 		if (temp){
 			memcpy(file,(void *)(i*BLOCKSIZE+ROOTDIRECTORY),sizeof(*file));
 			if (strcmp(file->name,name)==0) return 0;
@@ -54,7 +54,7 @@ PUBLIC void show_all_fileinfo(){
 	FILEINFO file;
 	total=0;
 	for (i=0,addr=MEMORYMAP; i<16384; i++,addr++){
-		u8 temp=read_bit(addr);
+		u8 temp=read_mem_byte(addr);
 		if (temp){
 			++total;
 			memcpy(&file,(void *)(i*BLOCKSIZE+ROOTDIRECTORY),sizeof(file));

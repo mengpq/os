@@ -124,7 +124,7 @@ PUBLIC void keyboard_read()
 			disp_pos -= 2;
 		}
 
-		in_process(0);
+		trace_cursor();
 	}
 	process_command(cmd);
 }

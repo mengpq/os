@@ -13,7 +13,7 @@ PUBLIC int is_free(int st, int ed){
 	st+=MEMORYMAP; ed+=MEMORYMAP;
 	int i;
 	for (i=st; i<ed; i++){
-		u8 temp=read_bit(i);
+		u8 temp=read_mem_byte(i);
 		if (temp){
 			return 0;
 		}
@@ -24,7 +24,7 @@ PUBLIC int is_free(int st, int ed){
 PUBLIC void mark(int st, int ed, char value){
 	st+=MEMORYMAP; ed+=MEMORYMAP;
 	for (; st<ed; st++){
-		write_bit(st,value);
+		write_mem_byte(st,value);
 	}
 }
 
@@ -52,7 +52,7 @@ PUBLIC int new_out(int total_block){
 	/*
 	int i,j,count=0;
 	for (i=FILE; i<MEMORYLIMIT; i+=BLOCKSIZE){
-		u8 temp=read_bit(i);
+		u8 temp=read_mem_byte(i);
 		if (temp==0) ++count;
 		if (count==total_block){
 			return i-BLOCKSIZE*(count-1);

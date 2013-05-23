@@ -34,7 +34,7 @@ typedef struct s_proc {
 	u16 ldt_sel;               /* gdt selector giving ldt base and limit */
 	DESCRIPTOR ldts[LDT_SIZE]; /* local descriptors for code and data */
 
-	int ticks;                 /* remained ticks */
+	int ticks,pre_ticks;                 /* remained ticks */
 	int priority;
 	int status;
 

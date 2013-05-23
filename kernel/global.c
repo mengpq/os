@@ -16,16 +16,15 @@
 #include "keyboard.h"
 #include "file.h"
 
-
 PUBLIC	PROCESS			proc_table[NR_TASKS], proc_table_bak[NR_TASKS];
 
 PUBLIC	char			task_stack[STACK_SIZE_TOTAL];
 
 PUBLIC	TASK	task_table[NR_TASKS] = {{task_tty, STACK_SIZE_TTY, "tty"},
-					{TestA, STACK_SIZE_TESTA, "a"},
-					{TestB, STACK_SIZE_TESTB, "b"},
-					{TestC, STACK_SIZE_TESTC, "c"},
-					{TestD, STACK_SIZE_TESTD, "d"}};
+					{PROCESSA, STACK_SIZE_TESTA, "a"},
+					{PROCESSB, STACK_SIZE_TESTB, "b"},
+					{PROCESSC, STACK_SIZE_TESTC, "c"},
+					{PROCESSD, STACK_SIZE_TESTD, "d"}};
 
 PUBLIC	irq_handler		irq_table[NR_IRQ];
 

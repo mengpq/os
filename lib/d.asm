@@ -10,17 +10,18 @@ extern milli_delay
 global PROCESSD
 
 PROCESSD:
+	mov word[x],13
+	mov word[y],64
 	mov byte[rdlu], 1             ; 当前画框的方向, 1-向右,2-向下,3-向左,4-向上
     mov word[char],'A'
 	
 loop1:
     call boxing
-	mov eax,10
+	mov eax,2
 	push eax
 	call milli_delay
 	add esp,4
     jmp loop1	
-	
 	
 boxing:
 	
