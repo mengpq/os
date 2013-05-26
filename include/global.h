@@ -27,5 +27,6 @@ EXTERN	PROCESS*	p_proc_ready;
 extern	PROCESS		proc_table[], proc_table_bak[];
 extern	char		task_stack[];
 extern  TASK            task_table[];
+extern  INNERPROCESS IN_PROCESS[];
 extern	irq_handler	irq_table[];
 

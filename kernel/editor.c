@@ -26,12 +26,16 @@ char editor_filename[32];
 char editor_linebuffer[256];
 int editor_mode,finish,editor_changepos;
 
+int calc_pos(int x, int y){
+	return x*80+y;
+}
+
 void editor_display(u8 c){
 	char output[2]={0};
 	if (c==0) c=' ';
 	output[0]=c;
 	disp_pos=(editor_pos.x*80+editor_pos.y)*2;
-	if (c!='\n') page_cache[disp_pos]=c;
+	if (c!='\n') page_cache[calc_pos(editor_pos.x,editor_pos.y)]=c;
 	display_string(output);
 
 	if (++editor_pos.y==80){
@@ -97,7 +101,7 @@ void editor_open_file(char *st){
 		memcpy(editor_filename,file.name,sizeof(file.name));
 		editor_pos.x=0,editor_pos.y=0;
 		int i,j;
-		for (i=0; i<23; i++) for (j=0; j<80; j++) editor_display(page_cache[(i*80+j)*2]);
+		for (i=0; i<23; i++) for (j=0; j<80; j++) editor_display(page_cache[calc_pos(i,j)]);
 	}
 }
 
@@ -137,14 +141,14 @@ void editor_line_search(int direction){
 	int x,y;
 	if (direction==1){
 		x=editor_pos.x,y=editor_pos.y+1;
-		for (; y<80; y++) if (page_cache[(x*80+y)*2]==ch){
+		for (; y<80; y++) if (page_cache[calc_pos(x,y)]==ch){
 			editor_pos.y=y;
 			return;
 		}
 	} else{
 		x=editor_pos.x,y=editor_pos.y-1;
 		if (y<=0) return;
-		for (; y>=0; y--) if (page_cache[(x*80+y)*2]==ch){
+		for (; y>=0; y--) if (page_cache[calc_pos(x,y)]==ch){
 			editor_pos.y=y;
 			return;
 		}
@@ -171,35 +175,31 @@ void editor_replace_char(){
 
 /* make current line down k line*/
 void editor_down_line(int current, int k){
-	int i,j,pos=current*80*2;
-	for (i=MAXROW; i>=current+k; i--) memcpy(page_cache+i*80*2,page_cache+(i-k)*80*2,160);
-	for (i=0; i<k; i++) memcpy(page_cache+(i+current)*80*2,editor_linebuffer,160);
+	int i,j,pos=current*80;
+	for (i=MAXROW; i>=current+k; i--) memcpy(page_cache+i*80,page_cache+(i-k)*80,80);
+	for (i=0; i<k; i++) memcpy(page_cache+(i+current)*80,editor_linebuffer,80);
 	editor_pos.x=current; editor_pos.y=0;
 	for (i=current; i<23; i++) for (j=0; j<80; j++){
-		editor_display(page_cache[pos]);
-		pos+=2;
+		editor_display(page_cache[calc_pos(i,j)]);
 	}
 }
 
 void delete_one_row(){
-	int x,y,pos=editor_pos.x*80*2;
+	int x,y,pos=editor_pos.x*80;
 	for (x=editor_pos.x; x<MAXROW; x++){
-		for (y=0; y<80; y++){
-			page_cache[pos]=page_cache[pos+160];
-			pos+=2;
-		}
+		memcpy(page_cache+x*80,page_cache+(x+1)*80,80);
 	}
+	pos=MAXROW*80;
 	for (y=0; y<80; y++){
 		page_cache[pos]=' ';
-		pos+=2;
+		pos++;
 	}
-	pos=editor_pos.x*80*2;
+	pos=editor_pos.x*80;
 	editor_pos.y=0;
 	for (x=editor_pos.x; x<23; x++){
 		for (y=0; y<80; y++){
-			//if (page_cache[pos]==0) page_cache[pos]=' ';
 			editor_display(page_cache[pos]);
-			pos+=2;
+			pos++;
 		}
 	}
 }
@@ -327,7 +327,7 @@ void editor_process(u8 scan_code){
 			} else if (c=='e'){
 				editor_open_file(editor_filename);
 			} else if (c=='y'){
-				memcpy(editor_linebuffer,page_cache+editor_pos.x*80*2,160);
+				memcpy(editor_linebuffer,page_cache+editor_pos.x*80,160);
 			} else if (c=='p'){
 				backup_pos=editor_pos;
 				editor_down_line(editor_pos.x+1,1);

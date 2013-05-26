@@ -3,8 +3,41 @@ os
 os homework base on orange's code
 
 * 文件
+	* kernel/
+		* kernel.asm
+			* _start - 加载gdt、idt、TSS，设置内核栈，跳至kernel_main
+			* restart - 重启切换后的进程
+		* start.c
+			* cstart - 将LOADER中的GDT复制到新的GDT中
+		* clock.c 
+			* init_clock - 初始化8259A，设置时钟中断处理程序
+			* clock_handler - 时钟中断处理，每产生一次时钟中断ticks就+1
+			* milli_delay - 延时，10ms一个单位 
+		* tty.c
+			* task_tty - 监视键盘输入
+			* trace_cursor - 跟踪光标
+		* keyboard.c
+			* init_keyboard - 初始化键盘中断，设置中断处理程序
+			* keyboard_handler - 处理键盘中断，将输入的键盘编码加进键盘队列里面
+			* get_key_from_cache - 取键盘队列队首元素(按键编码)
+			* get_keymap - 获取键盘编码对应的键(字符)
+			* keyboard_read - 处理一个命令行，输入回车表示命令输入结束
+		* memory.c
+			* is_free - 判断一段内存是否为未使用
+			* mark - 标记一段内存已经使用
+			* new_space - 从某个地址开始，申请一段长度大于等于size的连续内存
+		* file.c
+			* write_fileinfo - 将文件信息写到内存里面
+			* get_file_info_by_name - 按照文件名查询文件文件信息(没有实现目录结构)
+			* remove - 删除文件，清空文件占用的内存
+			* write_data - 将文件数据写到内存
+			* show_all_fileinfo - 输出所有文件的文件名
+		* global.c
+			* 存储全局变量
+
 	* include/proc.h - 存放全局函数名 <br>
 	* kernel/global.h - 存放全局变量
+	* kernel
 * 文件存储位置
 	* #define MEMORYMAP              /* 1bit表示一个BLOCK是否被使用，BLOCK从10M开始算起*/
 	* #define ROOTDIRECTORY 0xA00000 /* 文件目录项地址 10M */

@@ -24,4 +24,9 @@ typedef struct file{
 	char name[16],ext[4],author[12];
 	int size,mode,start_pos;
 }FILEINFO;
+
+typedef struct innerprocess{
+	char name[16];
+	void * initial_eip;
+}INNERPROCESS;
 #endif /* _ORANGES_TYPE_H_ */

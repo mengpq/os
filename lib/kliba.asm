@@ -10,6 +10,7 @@
 ; 导入全局变量
 extern	disp_pos
 extern  disp_int
+extern  memcpy
 
 
 [SECTION .text]
@@ -27,6 +28,7 @@ global  read_mem_byte
 global  read_mem_int
 global  write_mem_byte
 global 	write_mem_int
+global  readelf
 
 
 ; ========================================================================
@@ -258,6 +260,38 @@ read_mem_int:
 	mov edx,[ds:eax]
 	mov eax,edx
 	pop edx
+	ret
+
+
+readelf:
+	push 	ebp
+	mov 	ebp,esp
+	xor		esi, esi
+	mov 	eax,[ebp+8]
+	mov 	cx,word[eax+2Ch]  ; pELFHdr->e_phnum
+	movzx	ecx, cx				
+	mov 	eax,[ebp+8]
+	mov 	esi,[eax+1Ch]     ; pELFHdr->e_phoff
+	mov 	eax,esi
+	add 	esi,[ebp+8]
+	mov eax,esi               ; offsetOfFile + pELFHdr->e_phoff
+.bgn:
+	mov	eax, [esi + 0]
+	cmp	eax, 0				  ; PT_NULL
+	jz	.noaction
+	push	dword [esi + 010h]		; size	┓
+	mov		eax, [esi + 04h]		;	┃
+	add 	eax,[ebp+8] 			;	┣ ::memcpy(	(void*)(pPHdr->p_vaddr),
+	push	eax						; src	┃		uchCode + pPHdr->p_offset,
+	push	dword [esi + 08h]		; dst	┃		pPHdr->p_filesz;
+	call	memcpy					;	┃
+	add	esp, 12						;		┛
+.noaction:
+	add	esi, 020h					; esi += pELFHdr->e_phentsize
+	dec	ecx
+	jnz	.bgn
+
+	pop ebp
 	ret
 ;	push eax
 ;	push ebx

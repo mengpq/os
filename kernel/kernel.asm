@@ -38,7 +38,7 @@ bits 32
 clock_int_msg		db	"^", 0
 
 [SECTION .bss]
-StackSpace		resb	2 * 1024
+StackSpace		resb	64 * 1024
 StackTop:		; 栈顶
 
 [section .text]	; 代码在此

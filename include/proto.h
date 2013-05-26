@@ -14,6 +14,7 @@ PUBLIC u8 read_mem_byte(int pos);
 PUBLIC int read_mem_int(int pos);
 PUBLIC void write_mem_byte(int pos, u8 c);
 PUBLIC void write_mem_int(int pos, int value);
+PUBLIC void readelf(int filePhyAddr);
 
 /* protect.c */
 PUBLIC void	init_prot();

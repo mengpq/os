@@ -1,18 +1,10 @@
-extern milli_delay
-
-[section .data]
-	x dw 1                      ; 当前字符显示位置的行号,0~24
+[section .text]
+	x dw 13                      ; 当前字符显示位置的行号,0~24
 	y dw 48                      ; 当前字符显示位置的列号,0~79
 	rdlu db 1                   ; 当前画框的方向, 1-向右,2-向下,3-向左,4-向上
 	char db 'A'                 ; 当前显示字符
-
-[section .text]
-global PROCESSA
-
-PROCESSA:
-	mov word[x],1
+	mov word[x],13
 	mov word[y],48
-	mov eax,2
 	mov byte[rdlu], 1             ; 当前画框的方向, 1-向右,2-向下,3-向左,4-向上
     mov word[char],'A'
 	
@@ -20,9 +12,9 @@ loop1:
     call boxing
 	mov eax,2
 	push eax
-	call milli_delay
 	add esp,4
-	jmp loop1	
+    jmp loop1	
+	
 	
 boxing:
 	
@@ -45,7 +37,7 @@ down:
 	cmp al,2
 	jnz left
 	mov ax,word[x]               ;最后一行?
-	cmp ax, 11 
+	cmp ax,23
 	jz d2l
 	inc byte[x]
 	jmp show
@@ -73,7 +65,7 @@ up:
 	cmp al,4
 	jnz end
 	mov ax,word[x]               ;最上一行?
-	cmp ax, 1 
+	cmp ax, 13
 	jz u2r
 	dec byte[x]
 	jmp show
@@ -106,5 +98,6 @@ show:
 	
 end:
 	ret
+
 
     jmp $	

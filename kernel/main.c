@@ -20,33 +20,26 @@
 PUBLIC int kernel_main()
 {
 	clear_screen();
-
+	loadELF();
 	TASK*		p_task		= task_table;
 	PROCESS*	p_proc		= proc_table;
 	char*		p_task_stack	= task_stack + STACK_SIZE_TOTAL;
 	u16		selector_ldt	= SELECTOR_LDT_FIRST;
-	int i;
-	for (i = 0; i < NR_TASKS; i++) {
-		init_task(p_proc,p_task,selector_ldt,p_task_stack);
-		p_task_stack -= p_task->stacksize;
-		p_proc++;
-		p_task++;
-		selector_ldt += 1 << 3;
-	}
+	int i,priority;
+
 	proc_table[0].ticks = proc_table[0].pre_ticks=proc_table[0].priority =   20;  proc_table[0].status = RUNNING;
-	proc_table[1].ticks = proc_table[1].pre_ticks=proc_table[1].priority =   4;  proc_table[1].status = STOPPED;
-	proc_table[2].ticks = proc_table[2].pre_ticks=proc_table[2].priority =   4;  proc_table[2].status = STOPPED;
-	proc_table[3].ticks = proc_table[3].pre_ticks=proc_table[3].priority =   4;  proc_table[3].status = STOPPED;
-	proc_table[4].ticks = proc_table[4].pre_ticks=proc_table[4].priority =   4;  proc_table[4].status = STOPPED;
-
+	init_task(proc_table,task_table,SELECTOR_LDT_FIRST,p_task_stack,20,RUNNING);
+	for (i=1; i<NR_TASKS; i++){
+		proc_table[i].pid=i+1;
+		proc_table[i].status=STOPPED;
+		task_table[i].stacksize=0x400;
+	}
 	control_ticks();
-	
-	//for (i=0; i<NR_TASKS; i++) proc_table_bak[i]=proc_table[i];
 
-	k_reenter = 0;
-	ticks = 0;
+	k_reenter=0;
+	ticks=0;
 
-	p_proc_ready	= proc_table;
+	p_proc_ready=proc_table;
 
 	init_clock();
     init_keyboard();
@@ -54,6 +47,38 @@ PUBLIC int kernel_main()
 	restart();
 
 	while(1){}
+}
+
+
+/*======================================================================*
+                         loadELFFile
+ *======================================================================*/
+void loadELF(){
+	/* 0x1000存放加载的文件数
+	 * 0x1004开始存放文件名，单个字节的
+	 * 0x50000开始，每0x2000个字节放一个bin文件，bin文件的入口为0x400000(4M)
+	*/
+	int i,startAddr;
+	char filename[12]="a.bin";
+	u8 data[8192];
+	FILEINFO file;
+	int totalFileAddr=0x1000;
+	u8 totalFile=read_mem_byte(totalFileAddr);
+	for (i=0,startAddr=0x50000; i<totalFile;i++,startAddr+=0x2000){
+		memset((void *)0x400000+0x2000*i,0,sizeof(data));
+		memset(data,0,sizeof(data));
+		readelf(startAddr);
+		memcpy(data,(void *)0x400000+0x2000*i,sizeof(data));
+		memcpy(file.name,filename,sizeof(filename));
+		u8 c=read_mem_byte(0x1004+i);
+		if ('A'<=c && c<='Z') c=c-'A'+'a';
+		file.name[0]=c;
+		file.size=sizeof(data);
+		file.start_pos=new_space(FILESTOREADDR,file.size);
+		write_fileinfo(file);
+		write_data(file.start_pos,data,sizeof(data));
+		++filename[0];
+	}
 }
 
 /*======================================================================*
@@ -66,22 +91,19 @@ void control_ticks(){
 		if (proc_table[i].status==RUNNING) sum+=proc_table[i].priority;
 	}
 	if (!sum) return;
-	//disp_int(sum); display_string(" ");
 	for (i=1; i<NR_TASKS; i++){
 		if (proc_table[i].status==RUNNING){
 			int temp=20*proc_table[i].priority/sum;
 			if (temp==0) temp=1;
 			proc_table[i].pre_ticks=temp;
-			//display_int(temp); display_string(" ");
 		}
 	}
-	//display_string("\n");
 }
 
 /*======================================================================*
                          init_task
  *======================================================================*/
-PUBLIC void init_task(PROCESS* p_proc, TASK* p_task, u16 selector_ldt, char* p_task_stack){
+PUBLIC void init_task(PROCESS* p_proc, TASK* p_task, u16 selector_ldt, char* p_task_stack, int priority, int status){
 	strcpy(p_proc->p_name,p_task->name);
 	p_proc->ldt_sel=selector_ldt;
 
@@ -103,33 +125,23 @@ PUBLIC void init_task(PROCESS* p_proc, TASK* p_task, u16 selector_ldt, char* p_t
 	//初始化标志寄存器
 	p_proc->regs.eflags = 0x1202; /* IF=1, IOPL=1 */
 
-	/*
-	display_int(p_proc->regs.cs); display_string(" ");
-	display_int(p_proc->regs.ds); display_string(" ");
-	display_int(p_proc->regs.es); display_string(" ");
-	display_int(p_proc->regs.ss); display_string(" ");
-	display_int(p_proc->regs.gs); display_string(" ");
-	display_int(p_proc->regs.eip); display_string(" ");
-	display_int(p_proc->regs.esp); display_string(" ");
-	display_int(p_proc->regs.eflags); display_string(" ");
-	display_string("\n");
-	*/
 
-	p_proc->status = RUNNING;
+	p_proc->ticks = p_proc->pre_ticks = p_proc->priority = priority; p_proc->status = status;
 }
 
-void restart_process(char *name){
+int restart_process(char *name){
 	TASK*		p_task		= task_table;
 	PROCESS*	p_proc		= proc_table;
 	char*		p_task_stack	= task_stack + STACK_SIZE_TOTAL;
 	u16		selector_ldt	= SELECTOR_LDT_FIRST;
-	int i;
+	int i,pid=-1;
 	for (i = 0; i < NR_TASKS; i++) {
 		if (strcmp(p_proc->p_name,name)==0){
+			pid=p_proc->pid;
 			if (p_proc->status==SLEEPING){
 				p_proc->status=RUNNING;
 			} else{
-				init_task(p_proc,p_task,selector_ldt,p_task_stack);
+				init_task(p_proc,p_task,selector_ldt,p_task_stack,4,RUNNING);
 			}
 			break;
 		}
@@ -139,6 +151,7 @@ void restart_process(char *name){
 		selector_ldt += 1 << 3;
 	}
 	control_ticks();
+	return pid;
 }
 
 
@@ -164,21 +177,53 @@ void clear_screen(){
 	trace_cursor();
 }
 
-int run(char* process_name){
+int start_program(char *process_name, void* initial_eip){
 	int i;
-	for (i=1; i<NR_TASKS; i++) if (strcmp(process_name,proc_table[i].p_name)==0){
-		if (proc_table[i].status==RUNNING) return -1;
-		restart_process(process_name);
-		//proc_table[i].status=RUNNING;
-		return i;
+	for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==STOPPED){
+		memcpy(task_table[i].name,process_name,sizeof(process_name)+1);
+		task_table[i].initial_eip=initial_eip;
+		char* stk=task_stack+STACK_SIZE_TOTAL-task_table[i].stacksize*i;
+		init_task(proc_table+i,task_table+i,SELECTOR_LDT_FIRST+i*(1<<3),stk,4,RUNNING);
+		return proc_table[i].pid;
 	}
 	return -1;
 }
 
-int kill(char* process_name){
+int run(char* process_name){
+	int i;
+	for (i=0; i<NR_TASKS; i++) if (proc_table[i].status!=STOPPED){
+		if (strcmp(proc_table[i].p_name,process_name)==0){
+			if (proc_table[i].status==RUNNING) return -1;
+			restart_process(process_name);
+			return proc_table[i].pid;
+		}
+	}
+	FILEINFO file;
+	memset(&file,0,sizeof(file));
+	if (get_file_info_by_name(process_name,&file)!=-1){
+		return start_program(process_name,(void *)file.start_pos);
+	} else{
+		for (i=0; i<NR_INNERPROCESS; i++) if (strcmp(IN_PROCESS[i].name,process_name)==0){
+			return start_program(process_name,IN_PROCESS[i].initial_eip);
+		}
+	}
+	return -1;
+}
+
+int kill(char *PID){
+	int pid;
+	pid=atoi(PID);
+	if (pid<=1 || pid>NR_TASKS) return -1;
+	if (proc_table[pid-1].status==STOPPED) return -1;
+	proc_table[pid-1].status=STOPPED;
+	control_ticks();
+	return 0;
+}
+
+int killall(char *process_name){
 	int i;
 	for (i=1; i<NR_TASKS; i++) if (strcmp(process_name,proc_table[i].p_name)==0){
-		if (proc_table[i].status!=RUNNING && proc_table[i].status!=SLEEPING) return -1;
+		if (proc_table[i].status==STOPPED) return -1;
 		proc_table[i].status=STOPPED;
 		control_ticks();
 		return i;
@@ -232,12 +277,11 @@ int dump_mem(char *start, char *len){
 	return 0;
 }
 
-void display_task(PROCESS* task){
-	//display_string("pid = "); display_int(task->pid); 
-	display_string("  name = "); display_string(task->p_name);
+void display_task(PROCESS* process){
+	display_string("pid = "); display_int(process->pid); 
+	display_string("  name = "); display_string(process->p_name);
 	display_string("  status = "); 
-	int status=task->status;
-	if (status == STOPPED) display_string("STOPPED\n"); else
+	int status=process->status;
 	if (status == RUNNING) display_string("RUNNING\n"); else
 	if (status == SLEEPING) display_string("SLEEPING\n");
 }
@@ -245,20 +289,23 @@ void display_task(PROCESS* task){
 int show_tasks(char *argc){
 	int i,total=0;
 	if (strcmp(argc,"-a")==0){
-		display_string("There are "); display_int(NR_TASKS-1); display_string(" task!\n");
-		for (i=1; i<NR_TASKS; i++) display_task(proc_table+i);
+		int total=0;
+		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status!=STOPPED) ++total;
+		display_string("There are "); display_int(total); display_string(" task!\n");
+		for (i=1; i<NR_TASKS; i++) 
+			if (proc_table[i].status!=STOPPED) display_task(proc_table+i);
 		return 0;
 	} else if (strcmp(argc,"-r")==0){
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==RUNNING) ++total;
 		display_string("There are "); display_int(total); display_string(" task RUNNING!\n");
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==RUNNING) display_task(proc_table+i);
 		return 0;
-	} else if (strcmp(argc,"-d")==0){
+	} /*else if (strcmp(argc,"-d")==0){
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==STOPPED) ++total;
 		display_string("There are "); display_int(total); display_string(" task STOPPED!\n");
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==STOPPED) display_task(proc_table+i);
 		return 0;
-	} else if (strcmp(argc,"-s")==0){
+	} */else if (strcmp(argc,"-s")==0){
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==SLEEPING) ++total;
 		display_string("There are "); display_int(total); display_string(" task SLEEPING!\n");
 		for (i=1; i<NR_TASKS; i++) if (proc_table[i].status==SLEEPING) display_task(proc_table+i);
@@ -277,10 +324,13 @@ void show_help(){
 	display_string("    clear             ---clear the screen\n");
 	display_string("    run <name>        ---run the process by name\n");
 	display_string("    sleep <name>      ---make the process sleep\n");
-	display_string("    kill <name>       ---kill the process by name\n");
-	display_string("    show -a -r -d -s  ---show all tasks's status\n");
+	display_string("    kill <pid>        ---kill the process by pid\n");
+	display_string("    killall <name>    ---kill the process by name\n");
+	display_string("    ps -a -r -d -s    ---show all tasks's status\n");
 	display_string("    help              ---show help information\n");
 	display_string("    edit <name>       ---edit a file\n");
+	display_string("    ls                ---list all file info\n");
+	display_string("    rm <name>         ---remove file\n");
 	display_string("    setp <name> <num> ---set the priority of process\n");
 	display_string("    dump <addr> <len> ---view the memory [addr+len)\n");
 }
@@ -307,24 +357,40 @@ void process_command(char* cmd){
 		if (total<2 || (pid=run(CMD[1]))==-1){
 			display_string("this program is not exists or already running!\n");
 		} else{
-			display_string("run successful");
-			//display_int(pid);
+			display_string("run successful ");
+			display_string("pid = "); display_int(pid); 
+			display_string(" name = "); display_string(CMD[1]);
 			display_string("\n");
 		}
 	} else if (strcmp(CMD[0],"sleep")==0){
 		if (total<2 || sleep(CMD[1])==-1){
 		} else{
-			display_string("the program: "); 
+			display_string("Process "); 
 			display_string(CMD[1]);
 			display_string(" is sleeping now!\n");
 		}
 	} else if (strcmp(CMD[0],"kill")==0){
-		if (total<2 || kill(CMD[1])==-1){
-			display_string("this program is neither running nor exists\n");
+		if (total<2 || !is_number(CMD[1])){
+			display_string("Usage: kill <pid>\n");
+		} else 
+		if (kill(CMD[1])==-1){
+			display_string("No such process\n");
 		} else{
-			display_string("the program: ");
+			display_string("The process with pid=");
 			display_string(CMD[1]);
-			display_string(" is stooped now!\n");
+			display_string(" was stopped\n");
+		}
+	} else if (strcmp(CMD[0],"killall")==0){
+		if (total<2){
+			display_string("Usage: killall <name>");
+		} else{
+			if (killall(CMD[1])==-1){
+				display_string("No such process\n");
+			} else{
+				display_string("the process with name=");
+				display_string(CMD[1]);
+				display_string(" was stopped\n");
+			}
 		}
 	} else if (strcmp(CMD[0],"setp")==0){
 		if (total<3 || !is_number(CMD[2])){
@@ -336,7 +402,7 @@ void process_command(char* cmd){
 		} else {
 			display_string("set priority successful\n");
 		}
-	} else if (strcmp(CMD[0],"show")==0){
+	} else if (strcmp(CMD[0],"ps")==0){
 		if (show_tasks(CMD[1])==-1){
 			display_string("I can't recognize the parameter\n");
 		}
@@ -354,7 +420,9 @@ void process_command(char* cmd){
 	} else if (strcmp(CMD[0],"help")==0){
 		show_help();
 	} else if (strcmp(CMD[0],"edit")==0){
-		start_editor(CMD[1]);
+		if (total==1){
+			display_string("Usage: edit <filename>\n");
+		} else start_editor(CMD[1]);
 	} else if (strcmp(CMD[0],"dump")==0){
 		if (dump_mem(CMD[1],CMD[2])==-1){
 			display_string("I can't recognize the parameter\n");
@@ -371,8 +439,6 @@ void process_command(char* cmd){
  *======================================================================*/
 void TestA()
 {
-	int temp=(task_f) PROCESSA;
-	display_int(temp);
 	int i;
 	FILEINFO file;
 	/*

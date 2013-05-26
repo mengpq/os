@@ -59,6 +59,10 @@ buildimg :
 	sudo mount -o loop a.img /mnt/floppy/
 	sudo cp -fv boot/loader.bin /mnt/floppy/
 	sudo cp -fv kernel.bin /mnt/floppy
+	sudo cp -fv elfFile/a.bin /mnt/floppy
+	sudo cp -fv elfFile/b.bin /mnt/floppy
+	sudo cp -fv elfFile/c.bin /mnt/floppy
+	sudo cp -fv elfFile/d.bin /mnt/floppy
 	sudo umount /mnt/floppy
 
 boot/boot.bin : boot/boot.asm boot/include/load.inc boot/include/fat12hdr.inc

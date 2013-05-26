@@ -156,7 +156,8 @@ typedef struct s_tss {
 #define ROOTDIRECTORY 0xA00000 /* 文件目录项地址 10M */
 #define ROOTDIRECTORYLIMIT 0xB00000 /* 目录项上限 */
 #define FILESTOREADDR 0xB00000     /* 文件存储初始地址 11M */
-#define BLOCKSIZE 0x40     /* 每一个block的容量4K */
+#define RUNTIMEMEMORY 0x2000000
 #define MEMORYLIMIT 0x4000000  /* 最大内存，和bochsrc对应 64M*/
+#define BLOCKSIZE 0x40     /* 每一个block的容量64byte */
 
 #endif /* _ORANGES_PROTECT_H_ */
